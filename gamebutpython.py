@@ -125,7 +125,7 @@ class MovingObstacles:
 		self.hurdles = []
 		
 		
-	def create_trains(self, self.trains):
+	def create_trains(self):
 		y = 0 #obstacles will appear from the top of the screen (hopefully)
 		
 		while len(self.trains) < 6:
@@ -137,7 +137,7 @@ class MovingObstacles:
 		return self.trains
 		
 		
-	def create_hurdles(self, self.hurdles):
+	def create_hurdles(self):
 		y = 0
 		
 		while len(self.hurdles) < 3:
@@ -149,12 +149,12 @@ class MovingObstacles:
 		return self.hurdles
 
 
-	def draw_trains(self, self.trains, screen):
+	def draw_trains(self, screen):
 		for i in self.trains:
 			screen.blit(trainImage, i)
 			
 		
-	def draw_hurdles(self, self.hurdles, screen):
+	def draw_hurdles(self, screen):
 		for j in self.hurdles:
 			screen.blit(hurdleImage, j)
 
