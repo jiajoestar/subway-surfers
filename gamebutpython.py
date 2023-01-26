@@ -8,6 +8,7 @@ width = 450
 height = 800
 screen = display.set_mode((width,height))
 display.set_caption("Subway Surfers")
+background = (0,0,0) #background of the game screen when game starts
 homeScreenImage = image.load("homeScreen.jpg")
 homeScreenImage = transform.scale(homeScreenImage, (width,height))
 #gameScreenImage = image.load("game screen.jpg")
