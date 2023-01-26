@@ -45,7 +45,7 @@ class HomeScreen():
 	def __init__(self):
 		self.playButton = Button(93,558,271,558)
 		self.playButton.setCallBack(startGame) #starts game when play button is clicked
-		self.running = True
+		#self.running = True
 		
 	def display(self,screen): #displays homescreen
 		screen.blit(homeScreenImage, (0,0))
@@ -74,7 +74,8 @@ class PlayAgainScreen():
 			gameScreenImage = image.load("game screen.jpg")
 			gameScreenImage = transform.scale(gameScreenImage, (width,height))
 
-#tbh idk if i really need player as a class
+
+''' #idk if i need player as a class
 class Player:
 	def __init__(self):
 		self.movex = 0
@@ -83,7 +84,6 @@ class Player:
 		self.character = image.load("jake running.png")
 		self.character = transform.scale(self.character, (87,114)) #width and height of character
 		
-	'''	
 	# need to change this
 	
 	#def control(self,x,y):
@@ -103,7 +103,8 @@ class Player:
 			self.frame += 1
 			if self.frame > 3*ani:
 				self.frame = 0
-	'''
+
+'''
 
 '''
 trainObstacleImage = image.load("train.png")
@@ -125,7 +126,7 @@ class MovingObstacles:
 		self.hurdles = []
 		
 		
-	def create_trains(self):
+	def create_trains(self): #removed self.trains
 		y = 0 #obstacles will appear from the top of the screen (hopefully)
 		
 		while len(self.trains) < 6:
@@ -137,7 +138,7 @@ class MovingObstacles:
 		return self.trains
 		
 		
-	def create_hurdles(self):
+	def create_hurdles(self): #removed self.hurdles
 		y = 0
 		
 		while len(self.hurdles) < 3:
@@ -149,21 +150,22 @@ class MovingObstacles:
 		return self.hurdles
 
 
-	def draw_trains(self, screen):
+	def draw_trains(self, screen): #removed self.trains
 		for i in self.trains:
 			screen.blit(trainImage, i)
 			
 		
-	def draw_hurdles(self, screen):
+	def draw_hurdles(self, screen): #removed self.hurdles
 		for j in self.hurdles:
 			screen.blit(hurdleImage, j)
 
-	
-character = Player() # spawning character
-character = Rect(188,700,87,114)
+characterImage = image.load("jake running.png")
+characterImage = transform.scale(characterImage, (87,114)) #width and height of character
+#character = Player() # spawning character
+character = Rect(188,700,87,114) # position of where the character spawns and its width and height
 px = 200 # how much the character moves left and right
-py = 200 # how much the character moves up (jumps)
-dy = 3
+#py = 200 # how much the character moves up (jumps)
+dy = 3 # how fast the obstacles move
 
 # game loop
 def startGame():
