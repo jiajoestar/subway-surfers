@@ -18,7 +18,7 @@ class Button(Rect):
 		self.y = y
 		self.buttonWidth = buttonWidth
 		self.buttonHeight = buttonHeight
-		super().__init__(x,y,buttonWidth,buttonHeight) #sets dimensions of the button
+		super().__init__(x,y,buttonWidth,buttonHeight) #sets position and dimensions of the button
 		
 	def drawButton(self,screen):
 		pass
@@ -63,7 +63,7 @@ class PlayAgainScreen():
 		self.playAgainScreenImage = transform.scale(self.playAgainScreenImage, (width,height))
 		self.playAgainButton = Button(425,746,179,651)
 		self.homeButton = Button(161,747,21,651)
-		self.playAgainButton.setCallBack(startGame) # starts game when play-again button is clicked
+		#self.playAgainButton.setCallBack(startGame) # starts game when play-again button is clicked
 
 	def display(self,screen): # displays play-again screen
 		screen.blit(self.playAgainScreenImage, (0,0))
@@ -81,17 +81,16 @@ class GameScreen():
 		self.character = Character()
 		self.px = 200 # how much the character moves left and right
 		#self.py = 200 # how much the character moves up
-		self.train = MovingObstacles() # creating trains
-		self.train.create_trains(screen)
-		self.hurdle = MovingObstacles() # creating hurdles
-		self.hurdle.create_hurdles(screen)
-		self.dy = 3 # how fast the obstacles move
+		self.moveObs = MovingObstacles() # creating obstacles
+		self.moveObs.create_trains(screen)
+		self.moveObs.create_hurdles(screen)
+#		self.hurdle = MovingObstacles()
+#		self.hurdle.create_hurdles(screen)
 		
 	def display(self, screen): # displays 
-		screen.blit(gameScreenImage, (0,0))
-		currentScreen.display(screen)
-		self.train.draw_trains(screen)
-		self.hurdle.draw_hurdles(screen)
+		screen.blit(self.gameScreenImage, (0,0))
+		self.moveObs.draw_trains(screen)
+		self.moveObs.draw_hurdles(screen)
 		
 	def handleClick(self):
 		pass
@@ -101,45 +100,20 @@ class GameScreen():
 			self.character.move_ip(-self.px,0)
 		if e.key == K_RIGHT:
 			self.character.move_ip(self.px,0)
-		#if e.key == K_SPACE:
-		#	self.character.move_ip(0,-self.py)
+#		if e.key == K_SPACE:
+#			self.character.move_ip(0,-self.py)
 	
 	def update(self): # moves everything
-		#pass
-		for a in self.trains:
-			a.move_ip(0,self.dy)
-			screen.blit(self.train,a)
+		self.moveObs.removeObs()
+		self.moveObs.movingObs()
 		
-		for a in self.trains:
-			if a.y >= height:
-				self.trains.remove(a)
-				self.trains.append(Rect(90,0,100,200))
-				self.trains.append(Rect(183,0,100,200))
-				self.trains.append(Rect(313,0,100,200))	
-		
-		for b in self.hurdles:
-			a.move_ip(0,self.dy)
-			screen.blit(self.hurdle,a)
-			
-		for b in self.hurdles:
-			if b.y <= 0:
-				self.hurdles.remove(j)
-				self.hurdles.append(Rect(width,0,100,80,70))
-			
-		# collision detection
-		# when the character collides with the obstacles, the play-again screen appears
-		for a in self.train:
-			if character.colliderect(a):
-				playAgainPage = PlayAgainScreen()
-				playAgainPage.display(screen)
-			
-		for b in self.hurdle:
-			if character.colliderect(b):
-				playAgainPage = PlayAgainScreen()
-				playAgainPage.display(screen)
+		# checks collisions
+		if self.moveObs.checkCollision(self.character):
+			playAgainPage = PlayAgainScreen()
+			playAgainPage.display(screen)
 
 
-class MovingObstacles:
+class MovingObstacles(Rect):
 	def __init__(self):
 		self.trainImage = image.load("train.png")
 		self.trainImage = transform.scale(self.trainImage, (200,100))
@@ -147,27 +121,24 @@ class MovingObstacles:
 		self.hurdleImage = transform.scale(self.hurdleImage, (200,500))
 		self.trains = []
 		self.hurdles = []
+		self.dy = 3 # how fast the obstacles move
 		
 	def create_trains(self, screen):
-		y = 0 # obstacles will appear from the top of the screen (hopefully)
-		
+		y = 0 # obstacles will appear from the top of the screen
 		while len(self.trains) < 6:
-			self.trains.append(Rect(90,y,100,200)) # trains appearing on the left side
-			self.trains.append(Rect(183,y,100,200)) # train appearing in the middle
-			self.trains.append(Rect(313,y,100,200)) # train appearing on the right side
+			self.trains.append(Rect(40,y,50,100)) # trains appearing on the left side
+			self.trains.append(Rect(100,y,50,100)) # train appearing in the middle
+			self.trains.append(Rect(300,y,50,100)) # train appearing on the right side
 			y += 500
-		
 		return self.trains
 		
 	def create_hurdles(self, screen): 
 		y = 0
-		
 		while len(self.hurdles) < 3:
-			self.hurdles.append(Rect(90,y,80,70)) # hurdles appearing on the left side
-			self.hurdles.append(Rect(183,y,80,70)) # hurdles appearing in the middle
-			self.hurdles.append(Rect(313,y,80,70)) # hurdles appearing on the right side
+			self.hurdles.append(Rect(40,y,80,70)) # hurdles appearing on the left side
+			self.hurdles.append(Rect(100,y,80,70)) # hurdles appearing in the middle
+			self.hurdles.append(Rect(300,y,80,70)) # hurdles appearing on the right side
 			y += 800
-		
 		return self.hurdles
 
 	def draw_trains(self, screen): 
@@ -177,7 +148,41 @@ class MovingObstacles:
 	def draw_hurdles(self, screen):
 		for j in self.hurdles:
 			screen.blit(self.hurdleImage, j)
-
+			
+	def movingObs(self):
+		for i in self.trains:
+			i.move_ip(0,self.dy)
+			screen.blit(self.trainImage,i)
+		
+		for j in self.hurdles:
+			j.move_ip(0,self.dy)
+			screen.blit(self.hurdleImage,j)
+	
+	def checkCollision(self,character): # when the character collides with obstacles, play-again screen appears
+		for i in self.trains:
+			if character.colliderect(i):
+				return True
+			
+		for j in self.hurdles:
+			if character.colliderect(j):
+				return True
+		
+		return False
+		
+	def removeObs(self):
+		for i in self.trains:
+			if i.y >= height:
+				self.trains.remove(i)
+				self.trains.append(Rect(40,0,50,100))
+				self.trains.append(Rect(100,0,50,100))
+				self.trains.append(Rect(300,0,50,100))
+				
+		for j in self.hurdles:
+			if j.y <= 0:
+				self.hurdles.remove(j)
+				self.hurdles.append(Rect(40,100,80,70))
+				self.hurdles.append(Rect(100,100,80,70))
+				self.hurdles.append(Rect(300,100,80,70))
 
 
 class Character(Rect):
@@ -185,12 +190,16 @@ class Character(Rect):
 		super().__init__(188,700,87,114)# position of where the character spawns and its width and height
 		self.characterImage = image.load("jake running.png")
 		self.characterImage = transform.scale(self.characterImage, (87,114)) #width and height of character
+		
+	def display(screen):
+		screen.blit(self.characterImage, (0,0))
 
 currentScreen = HomeScreen()
-gameScreen = GameScreen()
+
 
 # game loop
 gameOver = False
+
 while not gameOver:
 	for e in event.get():
 		if e.type == QUIT:
@@ -202,5 +211,6 @@ while not gameOver:
 	currentScreen.update()
 	currentScreen.display(screen)
 	
+		
 	display.flip()
 	time.delay(10)
