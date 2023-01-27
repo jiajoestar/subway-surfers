@@ -74,7 +74,6 @@ class PlayAgainScreen():
 			gameOver = False
 			
 
-dy = 3 # how fast the obstacles move
 class GameScreen():
 	def __init__(self):
 		self.gameScreenImage = image.load("game screen.jpg")
@@ -86,6 +85,7 @@ class GameScreen():
 		self.train.create_trains(screen)
 		self.hurdle = MovingObstacles() # creating hurdles
 		self.hurdle.create_hurdles(screen)
+		self.dy = 3 # how fast the obstacles move
 		
 	def display(self, screen): # displays 
 		screen.blit(gameScreenImage, (0,0))
@@ -107,8 +107,8 @@ class GameScreen():
 	def update(self): # moves everything
 		#pass
 		for a in self.trains:
-			a.move_ip(0,dy)
-			screen.blit(train,a)
+			a.move_ip(0,self.dy)
+			screen.blit(self.train,a)
 		
 		for a in self.trains:
 			if a.y >= height:
@@ -118,8 +118,8 @@ class GameScreen():
 				self.trains.append(Rect(313,0,100,200))	
 		
 		for b in self.hurdles:
-			a.move_ip(0,dy)
-			screen.blit(hurdle,a)
+			a.move_ip(0,self.dy)
+			screen.blit(self.hurdle,a)
 			
 		for b in self.hurdles:
 			if b.y <= 0:
@@ -128,12 +128,12 @@ class GameScreen():
 			
 		# collision detection
 		# when the character collides with the obstacles, the play-again screen appears
-		for a in train:
+		for a in self.train:
 			if character.colliderect(a):
 				playAgainPage = PlayAgainScreen()
 				playAgainPage.display(screen)
 			
-		for b in hurdle:
+		for b in self.hurdle:
 			if character.colliderect(b):
 				playAgainPage = PlayAgainScreen()
 				playAgainPage.display(screen)
