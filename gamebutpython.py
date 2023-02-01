@@ -62,7 +62,7 @@ class PlayAgainScreen():
 		self.playAgainButton = Button(425,746,179,651)
 		self.homeButton = Button(161,747,21,651)
 		self.nextScreen = self
-		#self.playAgainButton.setCallBack(self.handleClick) # starts game when play-again button is clicked
+		self.playAgainButton.setCallBack(self.handleClick) # starts game when play-again button is clicked
 
 	def display(self,screen): # displays play-again screen
 		screen.blit(self.playAgainScreenImage, (0,0))
