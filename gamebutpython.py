@@ -52,30 +52,41 @@ class HomeScreen():
 		pass
 		
 	def update(self):
-		pass
+		return self.nextScreen
 
 
 class PlayAgainScreen():
 	def __init__(self):
-		self.playAgainScreenImage = image.load("play again screen.png")
+		self.playAgainScreenImage = image.load("play again screen.jpg")
 		self.playAgainScreenImage = transform.scale(self.playAgainScreenImage, (width,height))
-		self.playAgainButton = Button(425,746,179,651)
-		self.homeButton = Button(161,747,21,651)
+		self.playAgainButton = Button(182,652,151,60)
+		self.homeButton = Button(22,652,137,60)
 		self.nextScreen = self
-		self.playAgainButton.setCallBack(self.handleClick) # starts game when play-again button is clicked
-
+		self.playAgainButton.setCallBack(self.playAgain) # starts game when play-again button is clicked
+		self.homeButton.setCallBack(self.homeAgain) # returns to home screen
+		self.score = 0
+	
+	def playAgain(self):
+		self.nextScreen = GameScreen()
+		
+	def homeAgain(self):
+		self.nextScreen = HomeScreen()
+		
 	def display(self,screen): # displays play-again screen
 		screen.blit(self.playAgainScreenImage, (0,0))
+		score_img = font.render(str(self.score), True, (148,102,164))
+		screen.blit(score_img, (320,293))
 		
 	def handleClick(self):
 		pos = mouse.get_pos()
+		print(pos)
 		if self.playAgainButton.checkClicked(pos):
-			self.nextScreen = HomeScreen()
-			return self.nextScreen
+			print("play again")
 			
 		if self.homeButton.checkClicked(pos):
-			self.nextScreen = GameScreen()
-			return self.nextScreen
+			print("home screen")
+			
+		return self.nextScreen
 			
 	def playClick(self):
 		self.nextScreen = GameScreen()
@@ -84,8 +95,9 @@ class PlayAgainScreen():
 		pass
 		
 	def update(self):
-		pass
+		return self.nextScreen
 
+font = font.SysFont('freesansbold.ttf', 28)
 
 class GameScreen():
 	def __init__(self):
@@ -93,15 +105,22 @@ class GameScreen():
 		self.gameScreenImage = transform.scale(self.gameScreenImage, (width,height))
 		self.character = Character() # creating the character
 		self.moveObs = MovingObstacles() # creating obstacles
+		self.x2Multiplier = PowerUps() # creating multipliers
 		self.moveObs.create_trains(screen)
 		self.moveObs.create_hurdles(screen)
+		self.x2Multiplier.create_multipliers(screen)
+		self.score = 0
+		self.nextScreen = self
 		
 	def display(self, screen): # displays everything needed
 		screen.blit(self.gameScreenImage, (0,0))
+		self.character.display(screen)
 		self.moveObs.draw_trains(screen)
 		self.moveObs.draw_hurdles(screen)
-		self.character.display(screen)
-		
+		self.x2Multiplier.draw_multipliers(screen)
+		score_img = font.render("Score: " + str(self.score), True, (255,255,255))
+		screen.blit(score_img, (20,20))
+
 	def handleClick(self):
 		pass
 	
@@ -114,12 +133,19 @@ class GameScreen():
 	def update(self): # moves everything
 		self.moveObs.removeObs()
 		self.moveObs.movingObs()
-		self.handleKey(key) # ensures the keys are pressed 
+		self.handleKey(key) # ensures keys are pressed 
 		
-		# checks collisions
+		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
-			playAgainPage = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
-			playAgainPage.display(screen)
+			self.nextScreen = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
+			
+		else:
+			self.score += 1 # when character dodges obstacle, +1 point
+			
+		if self.x2Multiplier.checkCollision(self.character):
+			self.score = self.score * 2
+		
+		return self.nextScreen
 
 
 class MovingObstacles(Rect):
@@ -197,6 +223,49 @@ class MovingObstacles(Rect):
 					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,70))
 
 
+class PowerUps(Rect):
+	def __init__(self):
+		self.multiplierImage = image.load("multiplier.png")
+		self.multiplierImage = transform.scale(self.multiplierImage, (50,50))
+		self.multipliers = []
+		self.dy = 3
+		self.character = Character()
+		
+	def create_multipliers(self, screen):
+		y = 0 # multipliers will appear from the top of the screen 
+		while len(self.multipliers) < 3:
+			self.multipliers.append(Rect(50,y - random.randint(0, 500),50,50)) # appearing on the left
+			self.multipliers.append(Rect(130,y - random.randint(0, 500),50,50)) # appearing in the middle
+			self.multipliers.append(Rect(260,y - random.randint(0, 500),50,50)) # appearing on the right
+			y += random.randint(800,2000)
+		return self.multipliers
+		
+	def draw_multipliers(self, screen): 
+		for k in self.multipliers:
+			screen.blit(self.multiplierImage, k)
+			
+	def moveMultipliers(self):
+		for k in self.multipliers:
+			k.move_ip(0,self.dy)
+			screen.blit(self.multiplierImage,k)
+			
+	def checkCollision(self, character): # play-again screen appears
+		for i in self.multipliers:
+			if self.character.colliderect(i):
+				print("Collision wth multipliers") # checking collision 
+				return True
+		return False
+		
+	def removeMultipliers(self):
+		for k in self.multipliers:
+			if k.y >= height:
+				self.multipliers.remove(k)
+				y = 0 # multipliers appear from top of screen
+				if len(self.multipliers) <= 3:
+					self.multipliers.append(Rect(k.x,y - random.randint(0, 500),50,50))
+				
+
+
 class Character(Rect):
 	def __init__(self):
 		super().__init__(188,700,87,114) # position of where the character spawns and its width and height
@@ -231,8 +300,8 @@ while not gameOver:
 			currentScreen.handleKey(e.key)
 		if e.type == MOUSEBUTTONDOWN:
 			currentScreen = currentScreen.handleClick()
-	currentScreen.update()
+	currentScreen = currentScreen.update()
 	currentScreen.display(screen)
 		
 	display.flip()
-	#time.delay(10)
+	time.delay(10)
