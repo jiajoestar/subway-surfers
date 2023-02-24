@@ -57,7 +57,7 @@ class HomeScreen():
 
 class PlayAgainScreen():
 	def __init__(self):
-		self.playAgainScreenImage = image.load("play again screen.jpg")
+		self.playAgainScreenImage = image.load("play again screen.png")
 		self.playAgainScreenImage = transform.scale(self.playAgainScreenImage, (width,height))
 		self.playAgainButton = Button(182,652,151,60)
 		self.homeButton = Button(22,652,137,60)
@@ -79,7 +79,6 @@ class PlayAgainScreen():
 		
 	def handleClick(self):
 		pos = mouse.get_pos()
-		print(pos)
 		if self.playAgainButton.checkClicked(pos):
 			print("play again")
 			
