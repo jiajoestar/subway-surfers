@@ -7,6 +7,7 @@ init()
 width = 450
 height = 800
 screen = display.set_mode((width,height))
+final_score = 0
 display.set_caption("Subway Surfers")
 homeScreenImage = image.load("homeScreen.jpg")
 homeScreenImage = transform.scale(homeScreenImage, (width,height))
@@ -64,7 +65,7 @@ class PlayAgainScreen():
 		self.nextScreen = self
 		self.playAgainButton.setCallBack(self.playAgain) # starts game when play-again button is clicked
 		self.homeButton.setCallBack(self.homeAgain) # returns to home screen
-		self.score = 0
+		#self.score = 0
 	
 	def playAgain(self):
 		self.nextScreen = GameScreen()
@@ -73,8 +74,9 @@ class PlayAgainScreen():
 		self.nextScreen = HomeScreen()
 		
 	def display(self,screen): # displays play-again screen
+		global final_score
 		screen.blit(self.playAgainScreenImage, (0,0))
-		score_img = font.render(str(self.score), True, (148,102,164))
+		score_img = font.render(str(final_score), True, (148,102,164))
 		screen.blit(score_img, (320,293))
 		
 	def handleClick(self):
@@ -130,12 +132,14 @@ class GameScreen():
 			self.character.handleMove(125)
 	
 	def update(self): # moves everything
+		global final_score
 		self.moveObs.removeObs()
 		self.moveObs.movingObs()
 		self.handleKey(key) # ensures keys are pressed 
 		
 		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
+			final_score = self.score
 			self.nextScreen = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
 			
 		else:
@@ -150,7 +154,7 @@ class GameScreen():
 class MovingObstacles(Rect):
 	def __init__(self):
 		self.trainImage = image.load("train.png")
-		self.trainImage = transform.scale(self.trainImage, (200,200))
+		self.trainImage = transform.scale(self.trainImage, (70,220))
 		self.hurdleImage = image.load("hurdle.png")
 		self.hurdleImage = transform.scale(self.hurdleImage, (80,80))
 		self.trains = []
@@ -161,26 +165,28 @@ class MovingObstacles(Rect):
 	def create_trains(self, screen):
 		y = 0 # obstacles will appear from the top of the screen 
 		while len(self.trains) < 3:
-			self.trains.append(Rect(20,y - random.randint(0, 500),100,200)) # trains appearing on the left
-			self.trains.append(Rect(140,y - random.randint(0, 500),100,200)) # train appearing in the middle
-			self.trains.append(Rect(250,y - random.randint(0, 500),100,200)) # train appearing on the right
+			self.trains.append(Rect(70,y - random.randint(0, 500),70,220)) # trains appearing on the left
+			self.trains.append(Rect(185,y - random.randint(0, 500),70,220)) # train appearing in the middle
+			self.trains.append(Rect(300,y - random.randint(0, 500),70,220)) # train appearing on the right
 		return self.trains
 		
 	def create_hurdles(self, screen): 
 		y = -random.randint(0,500)
 		while len(self.hurdles) < 2:
-			self.hurdles.append(Rect(70,y - random.randint(0, 500),80,70)) # hurdles appearing on the left
-			self.hurdles.append(Rect(190,y - random.randint(0, 500),80,70)) # hurdles appearing in the middle
-			self.hurdles.append(Rect(300,y - random.randint(0, 500),80,70)) # hurdles appearing on the right
+			self.hurdles.append(Rect(70,y - random.randint(0, 500),80,80)) # hurdles appearing on the left
+			self.hurdles.append(Rect(190,y - random.randint(0, 500),80,80)) # hurdles appearing in the middle
+			self.hurdles.append(Rect(300,y - random.randint(0, 500),80,80)) # hurdles appearing on the right
 			y += random.randint(800,2000)
 		return self.hurdles
 
 	def draw_trains(self, screen): 
 		for i in self.trains:
+			#draw.rect(screen,(255,0,0),i)
 			screen.blit(self.trainImage, i)
 		
 	def draw_hurdles(self, screen):
 		for j in self.hurdles:
+			#draw.rect(screen,(255,0,0),j)
 			screen.blit(self.hurdleImage, j)
 			
 	def movingObs(self):
