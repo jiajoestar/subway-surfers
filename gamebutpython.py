@@ -85,7 +85,6 @@ class PlayAgainScreen():
 		
 	def handleClick(self):
 		pos = mouse.get_pos()
-		print(pos)
 		if self.playAgainButton.checkClicked(pos):
 			print("play again")
 
