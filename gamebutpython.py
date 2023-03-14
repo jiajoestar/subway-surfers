@@ -191,11 +191,11 @@ class MovingObstacles(Rect):
 			t2 = Rect(185,y - random.randint(0, 500),70,220)
 			t3 = Rect(300,y - random.randint(0, 500),70,220)
 			
-			while not isFree(t1): # while not free, do it again
+			while not self.isFree(t1): # while not free, do it again
 				t1 = Rect(70,y - random.randint(0, 500),70,220)
-			while not isFree(t2):
+			while not self.isFree(t2):
 				t2 = Rect(185,y - random.randint(0, 500),70,220)
-			while not isFree(t3):
+			while not self.isFree(t3):
 				t3 = Rect(300,y - random.randint(0, 500),70,220)
 				
 			self.trains.append(t1) # trains appearing on the left
@@ -210,11 +210,11 @@ class MovingObstacles(Rect):
 			h2 = Rect(190,y - random.randint(0, 500),80,80)
 			h3 = Rect(300,y - random.randint(0, 500),80,80)
 			
-			while not isFree(h1):
+			while not self.isFree(h1):
 				h1 = Rect(70,y - random.randint(0, 500),80,80)
-			while not isFree(h2):
+			while not self.isFree(h2):
 				h2 = Rect(190,y - random.randint(0, 500),80,80)
-			while not isFree(h3):
+			while not self.isFree(h3):
 				h3 = Rect(300,y - random.randint(0, 500),80,80)
 				
 			self.hurdles.append(h1) # hurdles appearing on the left
@@ -225,12 +225,10 @@ class MovingObstacles(Rect):
 
 	def draw_trains(self, screen): 
 		for i in self.trains:
-			#draw.rect(screen,(255,0,0),i)
 			screen.blit(self.trainImage, i)
 		
 	def draw_hurdles(self, screen):
 		for j in self.hurdles:
-			#draw.rect(screen,(255,0,0),j)
 			screen.blit(self.hurdleImage, j)
 			
 	def movingObs(self): # making the obstacles move
@@ -283,21 +281,48 @@ class PowerUps(Rect): # includes coins
 		self.dy = 3
 		self.character = Character()
 		
+	def isFree(self, obj): # ensures objects do not overlap each other
+		for m in self.multipliers + self.coins:
+			if obj.colliderect(m): return False
+		return True	
+		
 	def create_multipliers(self, screen):
 		y = 0 # multipliers will appear from the top of the screen 
-		while len(self.multipliers) < 3:
-			self.multipliers.append(Rect(80,y - random.randint(0, 500),50,50)) # appearing on the left
-			self.multipliers.append(Rect(190,y - random.randint(0, 500),50,50)) # appearing in the middle
-			self.multipliers.append(Rect(300,y - random.randint(0, 500),50,50)) # appearing on the right
+		while len(self.multipliers) < 3: 
+			m1 = Rect(80,y - random.randint(0, 500),50,50)
+			m2 = Rect(190,y - random.randint(0, 500),50,50)
+			m3 = Rect(300,y - random.randint(0, 500),50,50)
+			
+			while not self.isFree(m1): # multipliers will not overlap each other
+				m1 = Rect(80,y - random.randint(0, 500),50,50)
+			while not self.isFree(m2):
+				m2 = Rect(190,y - random.randint(0, 500),50,50)
+			while not self.isFree(m3):
+				m3 = Rect(300,y - random.randint(0, 500),50,50)
+			
+			self.multipliers.append(m1) # appearing on the left
+			self.multipliers.append(m2) # appearing in the middle
+			self.multipliers.append(m3) # appearing on the right
 			y += random.randint(800,2000)
 		return self.multipliers
 		
 	def create_coins(self, screen):
 		y = 0 # coins will appear from the top of the screen 
 		while len(self.coins) < 3:
-			self.coins.append(Rect(80,y - random.randint(0, 500),30,30)) # appearing on the left
-			self.coins.append(Rect(200,y - random.randint(0, 500),30,30)) # appearing in the middle
-			self.coins.append(Rect(320,y - random.randint(0, 500),30,30)) # appearing on the right
+			c1 = Rect(80,y - random.randint(0, 500),30,30)
+			c2 = Rect(200,y - random.randint(0, 500),30,30)
+			c3 = Rect(320,y - random.randint(0, 500),30,30)
+			
+			while not self.isFree(c1): # coins will not overlap each other
+				c1 = Rect(80,y - random.randint(0, 500),30,30)
+			while not self.isFree(c2):
+				c2 = Rect(200,y - random.randint(0, 500),30,30)
+			while not self.isFree(c3):
+				c3 = Rect(320,y - random.randint(0, 500),30,30)
+			
+			self.coins.append(c1) # appearing on the left
+			self.coins.append(c2) # appearing in the middle
+			self.coins.append(c3) # appearing on the right
 			y += random.randint(800,2000)
 		return self.coins
 		
