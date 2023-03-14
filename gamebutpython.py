@@ -8,10 +8,12 @@ width = 450
 height = 800
 screen = display.set_mode((width,height))
 final_score = 0
+total_coins = 0
 display.set_caption("Subway Surfers")
 homeScreenImage = image.load("homeScreen.jpg")
 homeScreenImage = transform.scale(homeScreenImage, (width,height))
-
+clock = time.Clock() # creating a clock
+time_elapsed = time.get_ticks() # returns the time in ms since pygame initialised
 
 class Button(Rect):
 	def __init__(self,x,y,buttonWidth,buttonHeight):
@@ -65,7 +67,6 @@ class PlayAgainScreen():
 		self.nextScreen = self
 		self.playAgainButton.setCallBack(self.playAgain) # starts game when play-again button is clicked
 		self.homeButton.setCallBack(self.homeAgain) # returns to home screen
-		#self.score = 0
 	
 	def playAgain(self):
 		self.nextScreen = GameScreen()
@@ -107,10 +108,13 @@ class GameScreen():
 		self.character = Character() # creating the character
 		self.moveObs = MovingObstacles() # creating obstacles
 		self.x2Multiplier = PowerUps() # creating multipliers
+		self.coin = PowerUps() # creating coins
 		self.moveObs.create_trains(screen)
 		self.moveObs.create_hurdles(screen)
 		self.x2Multiplier.create_multipliers(screen)
+		self.coin.create_coins(screen)
 		self.score = 0
+		self.coins_collected = 0
 		self.nextScreen = self
 		
 	def display(self, screen): # displays everything needed
@@ -119,8 +123,11 @@ class GameScreen():
 		self.moveObs.draw_trains(screen)
 		self.moveObs.draw_hurdles(screen)
 		self.x2Multiplier.draw_multipliers(screen)
+		self.coin.draw_coins(screen)
 		score_img = font.render("Score: " + str(self.score), True, (255,255,255))
 		screen.blit(score_img, (20,20))
+		coin_img = font.render("Coins: " + str(self.coins_collected), True, (255,255,255))
+		screen.blit(coin_img, (20,50))
 
 	def handleClick(self):
 		pass
@@ -132,21 +139,31 @@ class GameScreen():
 			self.character.handleMove(125)
 	
 	def update(self): # moves everything
-		global final_score
+		global final_score # making these variables global so this method can access them
+		global total_coins
+		global time_elapsed
 		self.moveObs.removeObs()
 		self.moveObs.movingObs()
+		self.x2Multiplier.removeMultipliers()
+		self.x2Multiplier.moveMultipliers()
+		self.coin.remove_coins()
+		self.coin.move_coins()
 		self.handleKey(key) # ensures keys are pressed 
 		
 		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
 			final_score = self.score
 			self.nextScreen = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
-			
 		else:
 			self.score += 1 # when character dodges obstacle, +1 point
 			
 		if self.x2Multiplier.checkCollision(self.character):
-			self.score = self.score * 2
+				if time_elapsed / 3000 > 0: # multiplier lasts for 3 seconds
+					self.score = self.score * 2 # x2 multiplier in effect; current score is multiplied by 2
+		
+		if self.coin.checkCollision(self.character):
+			self.coins_collected = self.coins_collected + 1 # for every coin collected, the coin counter is incremented
+			total_coins = self.coins_collected # play-again screen will display the number of coins collected from the game
 		
 		return self.nextScreen
 
@@ -189,7 +206,7 @@ class MovingObstacles(Rect):
 			#draw.rect(screen,(255,0,0),j)
 			screen.blit(self.hurdleImage, j)
 			
-	def movingObs(self):
+	def movingObs(self): # making the obstacles move
 		for i in self.trains:
 			i.move_ip(0,self.dy)
 			screen.blit(self.trainImage,i)
@@ -201,7 +218,7 @@ class MovingObstacles(Rect):
 	def checkCollision(self, character): # when the character collides with obstacles, play-again screen appears
 		for i in self.trains:
 			if self.character.colliderect(i):
-				print("Collision wth train") # checking collision 
+				print("Collision with train") # checking collision 
 				return True
 			
 		for j in self.hurdles:
@@ -211,7 +228,7 @@ class MovingObstacles(Rect):
 		
 		return False
 		
-	def removeObs(self):
+	def removeObs(self): # when the obstacles reach the end of the screen, they disappear
 		for i in self.trains:
 			if i.y >= height:
 				self.trains.remove(i)
@@ -228,47 +245,81 @@ class MovingObstacles(Rect):
 					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,70))
 
 
-class PowerUps(Rect):
+class PowerUps(Rect): # includes coins
 	def __init__(self):
 		self.multiplierImage = image.load("multiplier.png")
 		self.multiplierImage = transform.scale(self.multiplierImage, (50,50))
 		self.multipliers = []
+		self.coinImage = image.load("coin.png")
+		self.coinImage = transform.scale(self.coinImage, (30,30))
+		self.coins = []
 		self.dy = 3
 		self.character = Character()
 		
 	def create_multipliers(self, screen):
 		y = 0 # multipliers will appear from the top of the screen 
 		while len(self.multipliers) < 3:
-			self.multipliers.append(Rect(50,y - random.randint(0, 500),50,50)) # appearing on the left
-			self.multipliers.append(Rect(130,y - random.randint(0, 500),50,50)) # appearing in the middle
-			self.multipliers.append(Rect(260,y - random.randint(0, 500),50,50)) # appearing on the right
+			self.multipliers.append(Rect(80,y - random.randint(0, 500),50,50)) # appearing on the left
+			self.multipliers.append(Rect(190,y - random.randint(0, 500),50,50)) # appearing in the middle
+			self.multipliers.append(Rect(300,y - random.randint(0, 500),50,50)) # appearing on the right
 			y += random.randint(800,2000)
 		return self.multipliers
 		
-	def draw_multipliers(self, screen): 
+	def create_coins(self, screen):
+		y = 0 # coins will appear from the top of the screen 
+		while len(self.coins) < 3:
+			self.coins.append(Rect(80,y - random.randint(0, 500),30,30)) # appearing on the left
+			self.coins.append(Rect(200,y - random.randint(0, 500),30,30)) # appearing in the middle
+			self.coins.append(Rect(320,y - random.randint(0, 500),30,30)) # appearing on the right
+			y += random.randint(800,2000)
+		return self.coins
+		
+	def draw_multipliers(self, screen): # displaying multipliers onto the screen
 		for k in self.multipliers:
 			screen.blit(self.multiplierImage, k)
 			
-	def moveMultipliers(self):
-		for k in self.multipliers:
-			k.move_ip(0,self.dy)
-			screen.blit(self.multiplierImage,k)
+	def draw_coins(self, screen): # displaying coins onto the screen
+		for l in self.coins:
+			screen.blit(self.coinImage, l)
 			
-	def checkCollision(self, character): # play-again screen appears
-		for i in self.multipliers:
-			if self.character.colliderect(i):
-				print("Collision wth multipliers") # checking collision 
+	def moveMultipliers(self): # making the multipliers move 
+		for k in self.multipliers:
+			k.move_ip(0, self.dy)
+			screen.blit(self.multiplierImage, k)
+			
+	def move_coins(self): # making the coins move
+		for l in self.coins:
+			l.move_ip(0, self.dy)
+			screen.blit(self.coinImage, l)
+			
+	def checkCollision(self, character): # collision detection; does the character collect the item?
+		for k in self.multipliers:
+			if self.character.colliderect(k):
+				print("Collision with multipliers") # checking collision 
 				return True
+				
+		for l in self.coins:
+			if self.character.colliderect(l):
+				print("Collision with coins")
+				return True
+				
 		return False
 		
 	def removeMultipliers(self):
 		for k in self.multipliers:
-			if k.y >= height:
-				self.multipliers.remove(k)
+			if k.y >= height: # when multipliers reach the end of the screen they disappear
+				self.multipliers.remove(k) 
 				y = 0 # multipliers appear from top of screen
 				if len(self.multipliers) <= 3:
 					self.multipliers.append(Rect(k.x,y - random.randint(0, 500),50,50))
 				
+	def remove_coins(self):
+		for l in self.coins:
+			if l.y >= height:
+				self.coins.remove(l) # when coins reach the end of the screen they disappear
+				y = 0 # coins appear from top of screen
+				if len(self.coins) <= 3:
+					self.coins.append(Rect(l.x,y - random.randint(0, 500),50,50))
 
 
 class Character(Rect):
