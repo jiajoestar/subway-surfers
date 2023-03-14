@@ -379,9 +379,9 @@ class PowerUps(Rect): # includes coins
 
 class Character(Rect):
 	def __init__(self):
-		super().__init__(188,700,87,114) # position of where the character spawns and its width and height
+		super().__init__(188,700,70,90) # position of where the character spawns and its width and height
 		self.characterImage = image.load("jake running.png")
-		self.characterImage = transform.scale(self.characterImage, (87,114)) #width and height of character
+		self.characterImage = transform.scale(self.characterImage, (70,90)) #width and height of character
 		self.x = 190
 		
 	def display(self,screen):
