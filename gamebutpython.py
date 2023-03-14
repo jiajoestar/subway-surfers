@@ -178,21 +178,48 @@ class MovingObstacles(Rect):
 		self.hurdles = []
 		self.dy = 3 # how fast the obstacles move
 		self.character = Character()
-		
+	
+	def isFree(self, obj): # ensures objects do not overlap each other
+		for t in self.trains + self.hurdles:
+			if obj.colliderect(t): return False
+		return True
+	
 	def create_trains(self, screen):
 		y = 0 # obstacles will appear from the top of the screen 
 		while len(self.trains) < 3:
-			self.trains.append(Rect(70,y - random.randint(0, 500),70,220)) # trains appearing on the left
-			self.trains.append(Rect(185,y - random.randint(0, 500),70,220)) # train appearing in the middle
-			self.trains.append(Rect(300,y - random.randint(0, 500),70,220)) # train appearing on the right
+			t1 = Rect(70,y - random.randint(0, 500),70,220)
+			t2 = Rect(185,y - random.randint(0, 500),70,220)
+			t3 = Rect(300,y - random.randint(0, 500),70,220)
+			
+			while not isFree(t1): # while not free, do it again
+				t1 = Rect(70,y - random.randint(0, 500),70,220)
+			while not isFree(t2):
+				t2 = Rect(185,y - random.randint(0, 500),70,220)
+			while not isFree(t3):
+				t3 = Rect(300,y - random.randint(0, 500),70,220)
+				
+			self.trains.append(t1) # trains appearing on the left
+			self.trains.append(t2) # train appearing in the middle
+			self.trains.append(t3) # train appearing on the right
 		return self.trains
 		
 	def create_hurdles(self, screen): 
 		y = -random.randint(0,500)
 		while len(self.hurdles) < 2:
-			self.hurdles.append(Rect(70,y - random.randint(0, 500),80,80)) # hurdles appearing on the left
-			self.hurdles.append(Rect(190,y - random.randint(0, 500),80,80)) # hurdles appearing in the middle
-			self.hurdles.append(Rect(300,y - random.randint(0, 500),80,80)) # hurdles appearing on the right
+			h1 = Rect(70,y - random.randint(0, 500),80,80)
+			h2 = Rect(190,y - random.randint(0, 500),80,80)
+			h3 = Rect(300,y - random.randint(0, 500),80,80)
+			
+			while not isFree(h1):
+				h1 = Rect(70,y - random.randint(0, 500),80,80)
+			while not isFree(h2):
+				h2 = Rect(190,y - random.randint(0, 500),80,80)
+			while not isFree(h3):
+				h3 = Rect(300,y - random.randint(0, 500),80,80)
+				
+			self.hurdles.append(h1) # hurdles appearing on the left
+			self.hurdles.append(h2) # hurdles appearing in the middle
+			self.hurdles.append(h3) # hurdles appearing on the right
 			y += random.randint(800,2000)
 		return self.hurdles
 
