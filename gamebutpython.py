@@ -76,15 +76,19 @@ class PlayAgainScreen():
 		
 	def display(self,screen): # displays play-again screen
 		global final_score
+		global total_coins
 		screen.blit(self.playAgainScreenImage, (0,0))
 		score_img = font.render(str(final_score), True, (148,102,164))
+		coin_img = font.render(str(total_coins), True, (255,255,255))
 		screen.blit(score_img, (320,293))
+		screen.blit(coin_img, (328,351))
 		
 	def handleClick(self):
 		pos = mouse.get_pos()
+		print(pos)
 		if self.playAgainButton.checkClicked(pos):
 			print("play again")
-			
+
 		if self.homeButton.checkClicked(pos):
 			print("home screen")
 			
