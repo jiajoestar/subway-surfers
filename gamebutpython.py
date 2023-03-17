@@ -9,6 +9,7 @@ height = 800
 screen = display.set_mode((width,height))
 final_score = 0
 total_coins = 0
+distance_between_obstacles = 120 # number of pixels between each obstacle
 display.set_caption("Subway Surfers")
 homeScreenImage = image.load("homeScreen.jpg")
 homeScreenImage = transform.scale(homeScreenImage, (width,height))
@@ -145,6 +146,7 @@ class GameScreen():
 		global final_score # making these variables global so this method can access them
 		global total_coins
 		global time_elapsed
+		global distance_between_obstacles
 		self.moveObs.removeObs()
 		self.moveObs.movingObs()
 		self.x2Multiplier.removeMultipliers()
@@ -159,7 +161,8 @@ class GameScreen():
 			self.nextScreen = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
 		else:
 			self.score += 1 # when character dodges obstacle, +1 point
-			
+		
+		# multiplier lasts for a set amount of time	
 		if self.x2Multiplier.checkCollision(self.character):
 				if time_elapsed / 3000 > 0: # multiplier lasts for 3 seconds
 					self.score = self.score * 2 # x2 multiplier in effect; current score is multiplied by 2
@@ -180,7 +183,8 @@ class MovingObstacles(Rect):
 		self.trains = []
 		self.hurdles = []
 		self.dy = 3 # how fast the obstacles move
-		self.character = Character()
+		self.createNew = False # used for creating new obstacles
+		self.count = 0
 	
 	def isFree(self, obj): # ensures objects do not overlap each other
 		for t in self.trains + self.hurdles:
@@ -190,16 +194,16 @@ class MovingObstacles(Rect):
 	def create_trains(self, screen):
 		y = 0 # obstacles will appear from the top of the screen 
 		while len(self.trains) < 3:
-			t1 = Rect(70,y - random.randint(0, 500),70,220)
-			t2 = Rect(185,y - random.randint(0, 500),70,220)
-			t3 = Rect(300,y - random.randint(0, 500),70,220)
+			t1 = Rect(70,y - random.randint(0,500),70,220)
+			t2 = Rect(185,y - random.randint(0,500),70,220)
+			t3 = Rect(300,y - random.randint(0,500),70,220)
 			
 			while not self.isFree(t1): # while not free, do it again
-				t1 = Rect(70,y - random.randint(0, 500),70,220)
+				t1 = Rect(70,y - random.randint(0,500),70,220)
 			while not self.isFree(t2):
-				t2 = Rect(185,y - random.randint(0, 500),70,220)
+				t2 = Rect(185,y - random.randint(0,500),70,220)
 			while not self.isFree(t3):
-				t3 = Rect(300,y - random.randint(0, 500),70,220)
+				t3 = Rect(300,y - random.randint(0,500),70,220)
 				
 			self.trains.append(t1) # trains appearing on the left
 			self.trains.append(t2) # train appearing in the middle
@@ -207,18 +211,18 @@ class MovingObstacles(Rect):
 		return self.trains
 		
 	def create_hurdles(self, screen): 
-		y = -random.randint(0,500)
+		y = -random.randint(0,1000)
 		while len(self.hurdles) < 2:
-			h1 = Rect(70,y - random.randint(0, 500),80,80)
-			h2 = Rect(190,y - random.randint(0, 500),80,80)
-			h3 = Rect(300,y - random.randint(0, 500),80,80)
+			h1 = Rect(70,y - random.randint(0,500),80,80)
+			h2 = Rect(190,y - random.randint(0,500),80,80)
+			h3 = Rect(300,y - random.randint(0,500),80,80)
 			
 			while not self.isFree(h1):
-				h1 = Rect(70,y - random.randint(0, 500),80,80)
+				h1 = Rect(70,y - random.randint(0,500),80,80)
 			while not self.isFree(h2):
-				h2 = Rect(190,y - random.randint(0, 500),80,80)
+				h2 = Rect(190,y - random.randint(0,500),80,80)
 			while not self.isFree(h3):
-				h3 = Rect(300,y - random.randint(0, 500),80,80)
+				h3 = Rect(300,y - random.randint(0,500),80,80)
 				
 			self.hurdles.append(h1) # hurdles appearing on the left
 			self.hurdles.append(h2) # hurdles appearing in the middle
@@ -229,10 +233,12 @@ class MovingObstacles(Rect):
 	def draw_trains(self, screen): 
 		for i in self.trains:
 			screen.blit(self.trainImage, i)
+			draw.rect(screen, (255,0,0), i, 1)
 		
 	def draw_hurdles(self, screen):
 		for j in self.hurdles:
 			screen.blit(self.hurdleImage, j)
+			draw.rect(screen, (255,0,0), j, 1)
 			
 	def movingObs(self): # making the obstacles move
 		for i in self.trains:
@@ -242,15 +248,29 @@ class MovingObstacles(Rect):
 		for j in self.hurdles:
 			j.move_ip(0,self.dy)
 			screen.blit(self.hurdleImage,j)
-	
+		
+		# need to create?
+		
+		y = 0 # obstacles will appear from the top of the screen
+		if self.createNew:
+			self.count += 1
+		
+		if self.createNew and self.count > 100: # if self.count is over 100fps
+			if len(self.trains) <= 3:
+					self.trains.append(Rect(i.x,y - random.randint(0,500),70,220)) # trains appearing on the left side
+			if len(self.hurdles) <= 2:
+					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,80))
+			self.createNew = False
+			self.count = 0
+			
 	def checkCollision(self, character): # when the character collides with obstacles, play-again screen appears
 		for i in self.trains:
-			if self.character.colliderect(i):
+			if character.colliderect(i):
 				print("Collision with train") # checking collision 
 				return True
 			
 		for j in self.hurdles:
-			if self.character.colliderect(j):
+			if character.colliderect(j):
 				print("Collision with hurdles")
 				return True
 		
@@ -261,16 +281,13 @@ class MovingObstacles(Rect):
 			if i.y >= height:
 				self.trains.remove(i)
 				y = 0 # obstacles will appear from the top of the screen
-				if len(self.trains) <= 3:
-					self.trains.append(Rect(i.x,y - random.randint(0, 500),100,200)) # trains appearing on the left side
-				
+				self.createNew = True
 				
 		for j in self.hurdles:
 			if j.y >= height:
 				self.hurdles.remove(j)
 				y = 0
-				if len(self.hurdles) <= 2:
-					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,70))
+				self.createNew = True
 
 
 class PowerUps(Rect): # includes coins
@@ -349,13 +366,15 @@ class PowerUps(Rect): # includes coins
 			
 	def checkCollision(self, character): # collision detection; does the character collect the item?
 		for k in self.multipliers:
-			if self.character.colliderect(k):
-				print("Collision with multipliers") # checking collision 
+			if character.colliderect(k):
+				print("Collision with multipliers") # checking collision
+				self.multipliers.remove(k) # when character collides with multiplier, multiplier looks as if it has been collected 
 				return True
 				
 		for l in self.coins:
-			if self.character.colliderect(l):
+			if character.colliderect(l):
 				print("Collision with coins")
+				self.coins.remove(l) # when character collides with coin, coin looks as if it has been collected
 				return True
 				
 		return False
@@ -379,13 +398,14 @@ class PowerUps(Rect): # includes coins
 
 class Character(Rect):
 	def __init__(self):
-		super().__init__(188,700,70,90) # position of where the character spawns and its width and height
+		super().__init__(188,700,50,100) # position of where the character spawns and its width and height
 		self.characterImage = image.load("jake running.png")
-		self.characterImage = transform.scale(self.characterImage, (70,90)) #width and height of character
+		self.characterImage = transform.scale(self.characterImage, (50,100)) #width and height of character
 		self.x = 190
 		
 	def display(self,screen):
-		screen.blit(self.characterImage, (self.x,650))
+		screen.blit(self.characterImage, self)
+		draw.rect(screen,(255,255,255), self,1)
 		
 	def handleMove(self, offset): 
 		self.x += offset
