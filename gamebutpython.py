@@ -299,7 +299,8 @@ class PowerUps(Rect): # includes coins
 		self.coinImage = transform.scale(self.coinImage, (30,30))
 		self.coins = []
 		self.dy = 3
-		self.character = Character()
+		self.createNew = False # used for creating new multipliers and coins
+		self.count = 0
 		
 	def isFree(self, obj): # ensures objects do not overlap each other
 		for m in self.multipliers + self.coins:
@@ -359,10 +360,30 @@ class PowerUps(Rect): # includes coins
 			k.move_ip(0, self.dy)
 			screen.blit(self.multiplierImage, k)
 			
+		y = 0
+		if self.createNew:
+			self.count += 1
+			
+		if self.createNew and self.count > 100: # if self.count is over 100fps
+			if len(self.multipliers) <= 3:
+					self.multipliers.append(Rect(k.x,y - random.randint(0,500),50,50))
+			self.createNew = False
+			self.count = 0
+			
 	def move_coins(self): # making the coins move
 		for l in self.coins:
 			l.move_ip(0, self.dy)
 			screen.blit(self.coinImage, l)
+			
+		y = 0
+		if self.createNew:
+			self.count += 1
+			
+		if self.createNew and self.count > 100: # if self.count is over 100fps
+			if len(self.coins) <= 3:
+					self.coins.append(Rect(l.x,y - random.randint(0,500),30,30))
+			self.createNew = False
+			self.count = 0
 			
 	def checkCollision(self, character): # collision detection; does the character collect the item?
 		for k in self.multipliers:
