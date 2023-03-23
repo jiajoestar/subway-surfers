@@ -9,7 +9,7 @@ height = 800
 screen = display.set_mode((width,height))
 final_score = 0
 total_coins = 0
-distance_between_obstacles = 120 # number of pixels between each obstacle
+distance_between_obstacles = 250 # number of pixels between each obstacle
 display.set_caption("Subway Surfers")
 homeScreenImage = image.load("homeScreen.jpg")
 homeScreenImage = transform.scale(homeScreenImage, (width,height))
@@ -154,6 +154,14 @@ class GameScreen():
 		self.coin.remove_coins()
 		self.coin.move_coins()
 		self.handleKey(key) # ensures keys are pressed 
+		for train in self.moveObs.trains:
+			for train2 in self.moveObs.trains:
+				if train.y - train2.y < 250:
+					print("error")
+					break
+				else:
+					print("not an error")
+		
 		
 		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
@@ -171,6 +179,11 @@ class GameScreen():
 			self.coins_collected = self.coins_collected + 1 # for every coin collected, the coin counter is incremented
 			total_coins = self.coins_collected # play-again screen will display the number of coins collected from the game
 		
+		# creating an obstacle for the set distance
+		for i in self.moveObs.trains:
+			if i.y < (height - distance_between_obstacles) :
+				self.moveObs.create_trains(screen)
+		
 		return self.nextScreen
 
 
@@ -187,23 +200,30 @@ class MovingObstacles(Rect):
 		self.count = 0
 	
 	def isFree(self, obj): # ensures objects do not overlap each other
-		for t in self.trains + self.hurdles:
+		global distance_between_obstacles
+		for t in self.trains + self.hurdles: 
 			if obj.colliderect(t): return False
 		return True
 	
 	def create_trains(self, screen):
+		global distance_between_obstacles
 		y = 0 # obstacles will appear from the top of the screen 
 		while len(self.trains) < 3:
-			t1 = Rect(70,y - random.randint(0,500),70,220)
-			t2 = Rect(185,y - random.randint(0,500),70,220)
-			t3 = Rect(300,y - random.randint(0,500),70,220)
+			t1 = Rect(70,y - random.randint(0,1000),70,220)
+			t2 = Rect(185,y - random.randint(0,1000),70,220)
+			t3 = Rect(300,y - random.randint(0,1000),70,220)
 			
 			while not self.isFree(t1): # while not free, do it again
 				t1 = Rect(70,y - random.randint(0,500),70,220)
+				t1.y += distance_between_obstacles
 			while not self.isFree(t2):
 				t2 = Rect(185,y - random.randint(0,500),70,220)
 			while not self.isFree(t3):
 				t3 = Rect(300,y - random.randint(0,500),70,220)
+				
+			
+			for train in self.trains:
+				print(train.y)
 				
 			self.trains.append(t1) # trains appearing on the left
 			self.trains.append(t2) # train appearing in the middle
@@ -212,10 +232,10 @@ class MovingObstacles(Rect):
 		
 	def create_hurdles(self, screen): 
 		y = -random.randint(0,1000)
-		while len(self.hurdles) < 2:
-			h1 = Rect(70,y - random.randint(0,500),80,80)
-			h2 = Rect(190,y - random.randint(0,500),80,80)
-			h3 = Rect(300,y - random.randint(0,500),80,80)
+		while len(self.hurdles) < 3:
+			h1 = Rect(70,y - random.randint(2500,3000),80,80)
+			h2 = Rect(190,y - random.randint(2000,2500),80,80)
+			h3 = Rect(300,y - random.randint(1500,2000),80,80)
 			
 			while not self.isFree(h1):
 				h1 = Rect(70,y - random.randint(0,500),80,80)
