@@ -154,14 +154,16 @@ class GameScreen():
 		self.coin.remove_coins()
 		self.coin.move_coins()
 		self.handleKey(key) # ensures keys are pressed 
+		
+		'''
 		for train in self.moveObs.trains:
 			for train2 in self.moveObs.trains:
-				if train.y - train2.y < 250:
+				if (train.y - train2.y) < 250:
 					print("error")
-					break
+					# break
 				else:
 					print("not an error")
-		
+		'''
 		
 		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
@@ -179,13 +181,15 @@ class GameScreen():
 			self.coins_collected = self.coins_collected + 1 # for every coin collected, the coin counter is incremented
 			total_coins = self.coins_collected # play-again screen will display the number of coins collected from the game
 		
+		'''
 		# creating an obstacle for the set distance
 		for i in self.moveObs.trains:
 			if i.y < (height - distance_between_obstacles) :
 				self.moveObs.create_trains(screen)
+		'''
 		
 		return self.nextScreen
-
+		
 
 class MovingObstacles(Rect):
 	def __init__(self):
@@ -195,7 +199,9 @@ class MovingObstacles(Rect):
 		self.hurdleImage = transform.scale(self.hurdleImage, (80,80))
 		self.trains = []
 		self.hurdles = []
-		self.dy = 3 # how fast the obstacles move
+		self.spaceBoxTrain = Rect(0,y - random.randint(0,1000),70,300) # collision boxes around trains
+		self.spaceBoxHurdle = Rect(0,y - random.randint(0,1000),80,200) # collision boxes around 
+		self.dy = 5 # how fast the obstacles move
 		self.createNew = False # used for creating new obstacles
 		self.count = 0
 	
@@ -214,35 +220,39 @@ class MovingObstacles(Rect):
 			t3 = Rect(300,y - random.randint(0,1000),70,220)
 			
 			while not self.isFree(t1): # while not free, do it again
-				t1 = Rect(70,y - random.randint(0,500),70,220)
-				t1.y += distance_between_obstacles
+				t1 = Rect(70,y - random.randint(0,1000),70,220)
 			while not self.isFree(t2):
-				t2 = Rect(185,y - random.randint(0,500),70,220)
+				t2 = Rect(185,y - random.randint(0,1000),70,220)
 			while not self.isFree(t3):
-				t3 = Rect(300,y - random.randint(0,500),70,220)
+				t3 = Rect(300,y - random.randint(0,1000),70,220)
 				
+			# checking if the space between the two trains is big enough to move	
+			if (t2.bottom - t1.y) < 250:
+				print("can't move")
 			
-			for train in self.trains:
-				print(train.y)
+			#for train in self.trains:
+			#	print(train.y)
 				
 			self.trains.append(t1) # trains appearing on the left
 			self.trains.append(t2) # train appearing in the middle
 			self.trains.append(t3) # train appearing on the right
 		return self.trains
 		
-	def create_hurdles(self, screen): 
-		y = -random.randint(0,1000)
+	def create_hurdles(self, screen):
+		global distance_between_obstacles
+		y = 0 # -random.randint(0,1000)
 		while len(self.hurdles) < 3:
 			h1 = Rect(70,y - random.randint(2500,3000),80,80)
 			h2 = Rect(190,y - random.randint(2000,2500),80,80)
 			h3 = Rect(300,y - random.randint(1500,2000),80,80)
 			
 			while not self.isFree(h1):
-				h1 = Rect(70,y - random.randint(0,500),80,80)
+				h1 = Rect(70,y - random.randint(0,3000),80,80)
 			while not self.isFree(h2):
-				h2 = Rect(190,y - random.randint(0,500),80,80)
+				h2 = Rect(190,y - random.randint(0,2500),80,80)
 			while not self.isFree(h3):
-				h3 = Rect(300,y - random.randint(0,500),80,80)
+				h3 = Rect(300,y - random.randint(0,3000),80,80)
+				
 				
 			self.hurdles.append(h1) # hurdles appearing on the left
 			self.hurdles.append(h2) # hurdles appearing in the middle
@@ -277,7 +287,7 @@ class MovingObstacles(Rect):
 		
 		if self.createNew and self.count > 100: # if self.count is over 100fps
 			if len(self.trains) <= 3:
-					self.trains.append(Rect(i.x,y - random.randint(0,500),70,220)) # trains appearing on the left side
+					self.trains.append(Rect(i.x,y - random.randint(0,500),70,220))
 			if len(self.hurdles) <= 2:
 					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,80))
 			self.createNew = False
@@ -295,6 +305,10 @@ class MovingObstacles(Rect):
 				return True
 		
 		return False
+		
+	# creating a space around the obstacles so that obstacles do not spawn on top of each other and the obstacles won't spawn in a line
+	#def spaceCollision(self):
+		
 		
 	def removeObs(self): # when the obstacles reach the end of the screen, they disappear
 		for i in self.trains:
@@ -318,7 +332,7 @@ class PowerUps(Rect): # includes coins
 		self.coinImage = image.load("coin.png")
 		self.coinImage = transform.scale(self.coinImage, (30,30))
 		self.coins = []
-		self.dy = 3
+		self.dy = 5 # how fast the power-up and coins move
 		self.createNew = False # used for creating new multipliers and coins
 		self.count = 0
 		
