@@ -145,25 +145,15 @@ class GameScreen():
 	def update(self): # moves everything
 		global final_score # making these variables global so this method can access them
 		global total_coins
-		global time_elapsed
-		global distance_between_obstacles
+		#global time_elapsed
 		self.moveObs.removeObs()
 		self.moveObs.movingObs()
 		self.x2Multiplier.removeMultipliers()
 		self.x2Multiplier.moveMultipliers()
 		self.coin.remove_coins()
 		self.coin.move_coins()
-		self.handleKey(key) # ensures keys are pressed 
-		
-		'''
-		for train in self.moveObs.trains:
-			for train2 in self.moveObs.trains:
-				if (train.y - train2.y) < 250:
-					print("error")
-					# break
-				else:
-					print("not an error")
-		'''
+		self.handleKey(key) # ensures keys are pressed
+		self.moveObs.spaceCollision()
 		
 		# checks obstacle collisions
 		if self.moveObs.checkCollision(self.character):
@@ -171,6 +161,9 @@ class GameScreen():
 			self.nextScreen = PlayAgainScreen() # when the character collides with the obstacles, the play-again screen appears
 		else:
 			self.score += 1 # when character dodges obstacle, +1 point
+		
+		#if self.moveObs.spaceCollision():
+		#	print("error")
 		
 		# multiplier lasts for a set amount of time	
 		if self.x2Multiplier.checkCollision(self.character):
@@ -199,20 +192,16 @@ class MovingObstacles(Rect):
 		self.hurdleImage = transform.scale(self.hurdleImage, (80,80))
 		self.trains = []
 		self.hurdles = []
-		self.spaceBoxTrain = Rect(0,y - random.randint(0,1000),70,300) # collision boxes around trains
-		self.spaceBoxHurdle = Rect(0,y - random.randint(0,1000),80,200) # collision boxes around 
 		self.dy = 5 # how fast the obstacles move
 		self.createNew = False # used for creating new obstacles
 		self.count = 0
 	
 	def isFree(self, obj): # ensures objects do not overlap each other
-		global distance_between_obstacles
 		for t in self.trains + self.hurdles: 
 			if obj.colliderect(t): return False
 		return True
 	
 	def create_trains(self, screen):
-		global distance_between_obstacles
 		y = 0 # obstacles will appear from the top of the screen 
 		while len(self.trains) < 3:
 			t1 = Rect(70,y - random.randint(0,1000),70,220)
@@ -225,40 +214,33 @@ class MovingObstacles(Rect):
 				t2 = Rect(185,y - random.randint(0,1000),70,220)
 			while not self.isFree(t3):
 				t3 = Rect(300,y - random.randint(0,1000),70,220)
-				
-			# checking if the space between the two trains is big enough to move	
-			if (t2.bottom - t1.y) < 250:
-				print("can't move")
 			
-			#for train in self.trains:
-			#	print(train.y)
-				
 			self.trains.append(t1) # trains appearing on the left
 			self.trains.append(t2) # train appearing in the middle
 			self.trains.append(t3) # train appearing on the right
 		return self.trains
 		
+		
 	def create_hurdles(self, screen):
-		global distance_between_obstacles
-		y = 0 # -random.randint(0,1000)
+		y = 0
 		while len(self.hurdles) < 3:
 			h1 = Rect(70,y - random.randint(2500,3000),80,80)
-			h2 = Rect(190,y - random.randint(2000,2500),80,80)
+			h2 = Rect(185,y - random.randint(2000,2500),80,80)
 			h3 = Rect(300,y - random.randint(1500,2000),80,80)
 			
 			while not self.isFree(h1):
 				h1 = Rect(70,y - random.randint(0,3000),80,80)
 			while not self.isFree(h2):
-				h2 = Rect(190,y - random.randint(0,2500),80,80)
+				h2 = Rect(185,y - random.randint(0,2500),80,80)
 			while not self.isFree(h3):
 				h3 = Rect(300,y - random.randint(0,3000),80,80)
-				
 				
 			self.hurdles.append(h1) # hurdles appearing on the left
 			self.hurdles.append(h2) # hurdles appearing in the middle
 			self.hurdles.append(h3) # hurdles appearing on the right
-			y += random.randint(800,2000)
+			y += random.randint(500,2000) 
 		return self.hurdles
+
 
 	def draw_trains(self, screen): 
 		for i in self.trains:
@@ -270,6 +252,7 @@ class MovingObstacles(Rect):
 			screen.blit(self.hurdleImage, j)
 			draw.rect(screen, (255,0,0), j, 1)
 			
+			
 	def movingObs(self): # making the obstacles move
 		for i in self.trains:
 			i.move_ip(0,self.dy)
@@ -280,7 +263,6 @@ class MovingObstacles(Rect):
 			screen.blit(self.hurdleImage,j)
 		
 		# need to create?
-		
 		y = 0 # obstacles will appear from the top of the screen
 		if self.createNew:
 			self.count += 1
@@ -292,6 +274,7 @@ class MovingObstacles(Rect):
 					self.hurdles.append(Rect(j.x,y - random.randint(0,500),80,80))
 			self.createNew = False
 			self.count = 0
+			
 			
 	def checkCollision(self, character): # when the character collides with obstacles, play-again screen appears
 		for i in self.trains:
@@ -306,8 +289,30 @@ class MovingObstacles(Rect):
 		
 		return False
 		
-	# creating a space around the obstacles so that obstacles do not spawn on top of each other and the obstacles won't spawn in a line
-	#def spaceCollision(self):
+		
+	# creating a space around the obstacles so that obstacles do not spawn in a line in a way that the character cannot dodge
+	def spaceCollision(self):		
+		y = 0
+		while len(self.trains) < 3:
+			spaceBoxTrain1 = Rect(70,y - random.randint(0,1000),70,300) # collision boxes around trains
+			spaceBoxTrain2 = Rect(185,y - random.randint(0,1000),70,300)
+			spaceBoxTrain3 = Rect(300,y - random.randint(0,1000),70,300)
+			
+			self.trains.append([spaceBoxTrain1, small]) #append at the same time, using indexes
+			self.trains.append(spaceBoxTrain2)
+			self.trains.append(spaceBoxTrain3)
+			
+		while len(self.hurdles) < 2:
+			spaceBoxHurdle1 = Rect(70,y - random.randint(0,1000),80,200) # collision boxes around hurdles
+			spaceBoxHurdle2 = Rect(185,y - random.randint(0,1000),80,200)
+			spaceBoxHurdle3 = Rect(300,y - random.randint(0,1000),80,200)
+			
+			self.hurdles.append(spaceBoxHurdle1)
+			self.hurdles.append(spaceBoxHurdle2)
+			self.hurdles.append(spaceBoxHurdle3)
+			
+			
+		return self.trains and self.hurdles
 		
 		
 	def removeObs(self): # when the obstacles reach the end of the screen, they disappear
