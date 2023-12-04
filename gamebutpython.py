@@ -1,5 +1,4 @@
-from pygame import * 
-
+from pygame import *
 import random 
 
 init()
@@ -298,7 +297,7 @@ class MovingObstacles(Rect):
 			spaceBoxTrain2 = Rect(185,y - random.randint(0,1000),70,300)
 			spaceBoxTrain3 = Rect(300,y - random.randint(0,1000),70,300)
 			
-			self.trains.append([spaceBoxTrain1, small]) #append at the same time, using indexes
+			self.trains.append(spaceBoxTrain1) #append at the same time, using indexes
 			self.trains.append(spaceBoxTrain2)
 			self.trains.append(spaceBoxTrain3)
 			
